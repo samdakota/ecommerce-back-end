@@ -7,12 +7,39 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  try {
+    const products = await Product.findAll({
+      include: [Category, Tag]
+    });
+    res.status(200).json(products);
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'Server error' });
+  }
 });
 
 // get one product
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  try {
+    const product = await Product.findOne({
+      where: {id: req.params.id},
+      include: [Category, Tag]
+    });
+
+    if (!product) {
+      res.status(404).json({ message: 'No product found with this id'});
+      return;
+    }
+
+    res.status(200).json(product);
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'Oops! Server error' });
+  }
 });
 
 // create new product
@@ -91,6 +118,24 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
+  try {
+    const product = await Product.destroy({
+      where: {
+        id: req.params.id
+      }
+    })
+
+    if (!product) {
+      res.status(404).json({ message: 'No product found with this id'});
+      return;
+    }
+
+    res.status(200).json({message: 'Product deleted'});
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).json({message: 'Server error' });
+  }
 });
 
 module.exports = router;
